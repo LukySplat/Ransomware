@@ -1,6 +1,5 @@
 #include "ransomlib.h"
-#include <dirent.h>
-// for socket
+#include <dirent.h> // for socket
 #include <sys/socket.h>
 #include <unistd.h> 
 #include <arpa/inet.h>
