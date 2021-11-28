@@ -31,7 +31,10 @@ void listdir(const char *name)
 
 	while (entity != NULL)
 	{
-		printf("%s/%s  type of folder : %d\n",name,entity->d_name,entity->d_type);
+		 if (entity->d_name[0] != '.')
+		 {
+			printf("%s/%s  [type of folder : %d]\n",name,entity->d_name,entity->d_type);
+		 }
 		if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 		{
 			// if(strcmp(d_name, ".")!=0)
