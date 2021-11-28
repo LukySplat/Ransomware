@@ -12,7 +12,30 @@ void usage()
 	printf("--------------------------------------\n");
 };
 
-int is_encrypted(char *filename);
+int is_encrypted(char *filename)
+// ici on assume que le nom de nos fichiers cryptés seront en ".crp"
+{
+	int n = strlen(filename)-4;
+	char extention[4] ;
+
+	for(int i=0; i<5;i++)
+	{
+		extention[i] = filename[n+i];
+	
+	}
+
+	if(strcmp(extention,".crp")==0)
+	{
+		printf("Le fichier est déja crypter");
+		return 0 ;
+	}
+	else
+	{
+		printf("le fichier n'est pas encore crypter");
+		return 1;
+	}
+}
+
 
 //void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 void listdir(const char *name)
