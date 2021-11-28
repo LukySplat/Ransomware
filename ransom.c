@@ -50,17 +50,18 @@ void listdir(const char *name)
 }
 
 //int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv);
-int generate_key()
+int generate_key(int sizeKey)
 {
-	// int *nb = 0;  
-    // printf("Quel est la taille de la clé ? ", nb);
-    // scanf("%d", &nb);
+	// int sizeKey[100];
+	// printf("Quel est la taille de la clé ? ");
+	// scanf("%s", sizeKey);
 	
-	char command[1000];
+	char buf[100];
+	sprintf(buf,"%d", sizeKey);
+	
+	char command[100];
 	stpcpy(command, "openssl rand -hex ");
-	// printf("%d\n", nb);
-	strcat(command, "8");
-	printf("%s", command);
+	strcat(command, buf);
 	system(command);
 }
 
@@ -98,7 +99,7 @@ int main (int argc, char * argv[])
 	{
 		printf("The directory is %s\n", argv[1]);
 		listdir(argv[1]);
-		generate_key();
+		generate_key(8);
 		//send_key();
 	}
 }
