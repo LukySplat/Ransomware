@@ -91,66 +91,30 @@ int generate_key(int sizeKey)
 //int send_key(char *pKey, char *pIv);
 int send_key()
 {
-	char *server_ip = "127.0.0.1";
-	int server_port = 8080;
+	int sockid;
+	// char buffer[MAXLINE];
+        int server_port = 8080;
+        char *server_ip = "127.0.0.1";
+		char *hello = "clé : JeSuisVraimentCon";
+		
+        sockid = socket(AF_INET,SOCK_STREAM,0);
 
-	int server_sock, client_sock;
-	struct sockaddr_in server_addr, client_addr;
-	socklen_t addr_size;
-	char buffer[1024];
-	int n;
+        struct sockaddr_in server_addr;
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_port = htons(server_port);
+        server_addr.sin_addr.s_addr = inet_addr(server_ip);
 
-	// socket create and verification
-	server_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_sock < 0){
-	printf("[-]Socket error");
-	exit(1);
-	}
-	printf("[+]TCP server socket created.\n");
-
-	// assign IP, PORT
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = server_port;
-	server_addr.sin_addr.s_addr = inet_addr(server_ip);
-
-	n = bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
-	if (n < 0){
-		printf("Error during binding \n");
-	exit(1);
-	}
-	printf("Server listening on %s : %d \n",server_ip,server_port);
-
-	// listen(server_sock, 5);
-	// printf("Listening...\n");
-
-	// Now server is ready to listen and verification
-	if ((listen(server_sock, 5)) != 0) {
-		printf("Listen failed...\n");
+	// connect the client socket to server socket
+	if (connect(sockid, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) 
+	{
+		printf("Connection with the server failed...\n");
 		exit(0);
 	}
 	else
-		printf("Server listening..\n");
+		printf("Connected to the server !\n");
+		send(sockid, (const char *)hello, strlen(hello),0);
 
-	addr_size = sizeof(client_addr);
-	client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &addr_size);
-	printf("[+]Client connected.\n");
-
-	// close(client_sock);
-	// printf("ok");
-	bzero(buffer, 1024);
-	recv(client_sock, buffer, sizeof(buffer), 0);
-	printf("Client: %s\n", buffer);
-
-	bzero(buffer, 1024);
-	strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY!!!");
-	printf("Server: %s\n", buffer);
-	send(client_sock, buffer, strlen(buffer), 0);
-
-	close(n);	
-	close(server_sock);
-	printf("[+]Client disconnected.\n\n");
-	return 0;
+        close(sockid);
 }
 
 int main (int argc, char * argv[])
