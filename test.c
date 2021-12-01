@@ -13,19 +13,20 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv)
 	if (!RAND_bytes(key, sizeKey) || !RAND_bytes(iv, sizeIv)) 
 	{
 		// OpenSSL reports a failure, act accordingly 
-		handleErrors();
+		fprintf(stderr, "ERROR: RAND_bytes error: %s\n", strerror(errno));
+		return errno;
 	}
 
 	// for(int cpt=0; cpt<sizeKey; cpt++)
 	// {
 			// printf("%d", key[cpt]);
 	// }
-	printf("%d",key);
 	
 	// for(int cpt=0; cpt<sizeIv; cpt++)
 	// {
 			// printf("%ld", iv[cpt]);
 	// }
+	printf("La clé : %d  l'IV : %d",key, iv);
 	OPENSSL_cleanse(key,sizeof(key));	
 	OPENSSL_cleanse(iv,sizeof(iv));
 }
