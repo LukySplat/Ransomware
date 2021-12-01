@@ -7,32 +7,21 @@
 
 int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv)
 {
-	// Generate cryptographically strong pseudo-random bytes for key and IV 
 	if (!RAND_bytes(key, sizeKey) || !RAND_bytes(iv, sizeIv)) 
 	{
-		// OpenSSL reports a failure, act accordingly 
-		fprintf(stderr, "ERROR: RAND_bytes error: %s\n", strerror(errno));
+		fprintf(stderr, "L'erreur est %s\n", strerror(errno));
 		return errno;
 	}
-
-	// for(int cpt=0; cpt<sizeKey; cpt++)
-	// {
-			// printf("%d", key[cpt]);
-	// }
 	
-	// for(int cpt=0; cpt<sizeIv; cpt++)
-	// {
-			// printf("%ld", iv[cpt]);
-	// }
 	printf("La clé : %d  l'IV : %d \n",key, iv);
 	
 	char hex_string[513];
 	bytes_to_hexa(key, hex_string,sizeKey);
-	printf("ok %X", hex_string);
+	printf("La clé en hexa : %X\n", hex_string);
 	
 	char bytes_string[513];
 	hexa_to_bytes(bytes_string,hex_string,sizeKey);
-	printf("okok2 %d", bytes_string);
+	printf("La clé en byte : %d", bytes_string);
 	
 	OPENSSL_cleanse(key,sizeof(key));	
 	OPENSSL_cleanse(iv,sizeof(iv));
@@ -57,9 +46,7 @@ void hexa_to_bytes(char hex_string[], unsigned char val[], int size)
 
 int main ()
 {
-	// Key to use for encrpytion and decryption 
 	unsigned char key[AES_256_KEY_SIZE+1];
-	// Initialization Vector 
 	unsigned char iv[AES_BLOCK_SIZE+1];
 
 	int sizeKey = AES_256_KEY_SIZE; 
