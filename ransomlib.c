@@ -49,7 +49,7 @@ int encrypt(unsigned char *key, unsigned char *iv, char *plaintext_file)
     {
        handleErrors();
     }
-    
+
     /* Create and initialise the context */
     if(!(ctx = EVP_CIPHER_CTX_new()))
         handleErrors();
@@ -91,7 +91,7 @@ int encrypt(unsigned char *key, unsigned char *iv, char *plaintext_file)
 
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
-   
+
     fclose(fIN);
     fclose(fOUT);
 
@@ -149,14 +149,14 @@ int decrypt(unsigned char *key, unsigned char *iv, char *cipher_file)
 
         fwrite(out_buf, sizeof(unsigned char), out_len, fOUT);
         num_bytes_read = fread(in_buf, sizeof(unsigned char), BUFSIZE, fIN);
- 
+
     }
    if(1 != EVP_DecryptFinal_ex(ctx, out_buf, &out_len))
         handleErrors();
 
     fwrite(out_buf, sizeof(unsigned char), out_len, fOUT);
 
-    
+
 
     /* Clean up */
     fclose(fOUT);
