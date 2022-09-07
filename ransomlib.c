@@ -139,4 +139,3 @@ int decrypt(unsigned char *key, unsigned char *iv, char *cipher_file)
     EVP_CIPHER_CTX_free(ctx);
     return 0;
 }
-
