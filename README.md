@@ -11,4 +11,4 @@
 <h1>To launch a server that listens to retrieve the key (the port number of your choice)</h1>
 <code>nc -l -v -p 8888</code>
 
-<h3 align="center">The "important" folder contains a series of folders and files on which you can test your program.</h3>
+<h4 align="center">The "important" folder contains a series of folders and files on which you can test your program.</h4>
