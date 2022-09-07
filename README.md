@@ -1,10 +1,14 @@
-# Ransomware
-Pour compiler le programme: 
-gcc -o ransom ransom.c ransomlib.c -lcrypto -lvlc (pour les paquets VLC)
+<p align="center">
+  <img width="200" src="https://copilote.henallux.be/images/cop/logo.png">
+</p>
+<h1 align="center">Development 2021 Project</h1>
+<h3 align="center">A ransomware project in Python for my second year of bachelor in cybersecurity at Henallux in Namur.</h3>
 
-Pour lancer un serveur qui écoute pour récupérer la clé (le numéro de port au choix)
-nc -l -v -p 8888 
 
-Le dossier "important" contient une série de dossiers et fichiers sur lesquel vous pouvez tester votre programme. 
+<h1>Compile the program</h1>
+<code>python3 gcc -o ransom ransom.c ransomlib.c -lcrypto</code>
 
-Lien de la vidéo pour le code : https://we.tl/t-GRJ6NFXjJH
+<h1>To launch a server that listens to retrieve the key (the port number of your choice)</h1>
+<code>nc -l -v -p 8888</code>
+
+The "important" folder contains a series of folders and files on which you can test your program.
